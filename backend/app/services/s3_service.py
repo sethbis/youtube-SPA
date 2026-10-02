@@ -60,14 +60,12 @@ def upload_file_to_s3(
         )
         url = f"https://{bucket_name}.s3.{settings.AWS_REGION}.amazonaws.com/{unique_filename}"
         return url
-    except (BotoCoreError, ClientError) as e:
-        # Modo de contingencia local si AWS S3 no esta configurado en desarrollo local
-        local_dir = os.path.join(os.getcwd(), "uploads", bucket_name)
-        os.makedirs(local_dir, exist_ok=True)
-        local_path = os.path.join(local_dir, unique_filename)
-        with open(local_path, "wb") as f:
-            f.write(file_bytes)
-        return f"/uploads/{bucket_name}/{unique_filename}"
+    except Exception as e:
+        print(f"Error al subir a S3 ({bucket_name}): {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error de subida a Amazon S3 en {bucket_name}: {str(e)}"
+        )
 
 def delete_file_from_s3(file_url: str, bucket_name: str) -> bool:
     try:
