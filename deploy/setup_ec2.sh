@@ -9,10 +9,21 @@ sudo apt-get install -y python3-pip python3-venv nginx git libpq-dev
 # cd /home/ubuntu
 # git clone <URL_REPOSITORIO> Parcial-1
 
+# Crear swap de 2GB si no existe para evitar OOM (SIGKILL 9) en t2.micro
+if [ ! -f /swapfile ]; then
+    echo "Configurando 2GB de memoria swap..."
+    sudo fallocate -l 2G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+fi
+
 # Configurar entorno virtual para FastAPI
 cd /home/ubuntu/Parcial-1/backend
+rm -rf venv
 python3 -m venv venv
-./venv/bin/pip install --upgrade pip
+./venv/bin/pip install --upgrade pip setuptools wheel
 ./venv/bin/pip install -r requirements.txt
 
 # Configurar servicio systemd
